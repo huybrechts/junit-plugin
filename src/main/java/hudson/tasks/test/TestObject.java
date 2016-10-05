@@ -215,7 +215,7 @@ public abstract class TestObject extends hudson.tasks.junit.TestObject {
     public AbstractTestResultAction getTestResultAction() {
         Run<?, ?> owner = getRun();
         if (owner != null) {
-            return owner.getAction(AbstractTestResultAction.class);
+            return owner.getAction(TestResultAction.class);
         } else {
             LOGGER.warning("owner is null when trying to getTestResultAction.");
             return null;
@@ -228,12 +228,17 @@ public abstract class TestObject extends hudson.tasks.junit.TestObject {
     @Override
     @Exported(visibility = 3)
     public List<TestAction> getTestActions() {
-        AbstractTestResultAction atra = getTestResultAction();
-        if ((atra != null) && (atra instanceof TestResultAction)) {
-            TestResultAction tra = (TestResultAction) atra;
-            return tra.getActions(this);
+        Run<?, ?> owner = getRun();
+        if (owner != null) {
+            List<TestResultAction> actions = owner.getActions(TestResultAction.class);
+            List<TestAction> result = new ArrayList<TestAction>();
+            for (TestResultAction action: actions) {
+                result.addAll(action.getActions(this));
+            }
+            return result;
         } else {
-            return new ArrayList<TestAction>();
+            LOGGER.warning("owner is null when trying to getTestResultAction.");
+            return null;
         }
     }
 
